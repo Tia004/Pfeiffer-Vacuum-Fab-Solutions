@@ -1,0 +1,317 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #070708;
+  --surface: #0d0d10;
+  --surface-raised: #121216;
+  --border: rgba(255, 255, 255, 0.11);
+  --border-strong: rgba(255, 255, 255, 0.28);
+  --text: #f2f2f4;
+  --muted: #7a7a85;
+  --accent: #ff3b1d; /* Pfeiffer Technical Vermilion */
+  --accent-glow: rgba(255, 59, 29, 0.25);
+  --emerald-vacuum: #10b981;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::selection {
+  background-color: var(--accent);
+  color: #000000;
+}
+
+html {
+  scroll-behavior: smooth;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", "Helvetica Neue", sans-serif;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+}
+
+/* Griglia Tecnica di Sfondo & Dot Matrix */
+.bg-tech-grid {
+  background-size: 48px 48px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+}
+
+.bg-tech-dots {
+  background-size: 24px 24px;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+}
+
+/* ==========================================================
+   MOTORE DI ICONE PURE CSS (ZERO SVG / ZERO EMOJI)
+   Tutte le icone sono costruite con geometria CSS pura
+   ========================================================== */
+
+/* 1. Icona Freccia Diagonale Tecnica (Nord-Est) */
+.css-icon-arrow-ne {
+  position: relative;
+  width: 12px;
+  height: 12px;
+  display: inline-block;
+  vertical-align: middle;
+}
+.css-icon-arrow-ne::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 8px;
+  height: 8px;
+  border-top: 1.5px solid currentColor;
+  border-right: 1.5px solid currentColor;
+}
+.css-icon-arrow-ne::after {
+  content: "";
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  width: 12px;
+  height: 1.5px;
+  background-color: currentColor;
+  transform-origin: right top;
+  transform: rotate(-45deg);
+}
+
+/* 2. Icona Mirino di Precisione (Crosshair) */
+.css-icon-crosshair {
+  position: relative;
+  width: 14px;
+  height: 14px;
+  display: inline-block;
+  vertical-align: middle;
+}
+.css-icon-crosshair::before,
+.css-icon-crosshair::after {
+  content: "";
+  position: absolute;
+  background-color: currentColor;
+}
+.css-icon-crosshair::before {
+  top: 6px;
+  left: 0;
+  width: 14px;
+  height: 1.5px;
+}
+.css-icon-crosshair::after {
+  top: 0;
+  left: 6px;
+  width: 1.5px;
+  height: 14px;
+}
+
+/* 3. Icona Turbina / Vuoto (Rotore Conico + Nucleo) */
+.css-icon-turbine {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.css-icon-turbine::before {
+  content: "";
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: repeating-conic-gradient(
+    currentColor 0deg 20deg,
+    transparent 20deg 45deg
+  );
+}
+.css-icon-turbine::after {
+  content: "";
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background-color: var(--bg);
+  border: 1px solid currentColor;
+}
+
+/* 4. Icona Chiusura (X Geometrica) */
+.css-icon-close {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  display: inline-block;
+  vertical-align: middle;
+}
+.css-icon-close::before,
+.css-icon-close::after {
+  content: "";
+  position: absolute;
+  top: 7px;
+  left: 0;
+  width: 16px;
+  height: 1.5px;
+  background-color: currentColor;
+}
+.css-icon-close::before { transform: rotate(45deg); }
+.css-icon-close::after { transform: rotate(-45deg); }
+
+/* 5. Icona Checkmark Geometrico */
+.css-icon-check {
+  display: inline-block;
+  width: 12px;
+  height: 6px;
+  border-left: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(-45deg) translateY(-2px);
+  vertical-align: middle;
+}
+
+/* 6. Icona Camera Iperbarica / Cubo Isometrico CSS */
+.css-icon-chamber {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid currentColor;
+  display: inline-block;
+  vertical-align: middle;
+}
+.css-icon-chamber::before {
+  content: "";
+  position: absolute;
+  inset: 2.5px;
+  border: 1px dashed currentColor;
+}
+.css-icon-chamber::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  background: var(--accent);
+  transform: translate(-50%, -50%);
+}
+
+/* 7. Icona Onda/Frequenza (Barre Parametriche) */
+.css-icon-wave {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2.5px;
+  width: 18px;
+  height: 16px;
+  vertical-align: middle;
+}
+.css-icon-wave span {
+  display: block;
+  width: 2px;
+  background-color: currentColor;
+  transition: height 0.3s ease;
+}
+
+/* 8. Icona Beacon Stato / Pulsazione Telemetrica */
+.css-icon-pulse {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  display: inline-block;
+  border-radius: 50%;
+  background-color: #10b981;
+  vertical-align: middle;
+}
+.css-icon-pulse::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 1px solid #10b981;
+  animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.8); opacity: 1; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+/* 9. Icona Scudo Legale / Sicurezza */
+.css-icon-shield {
+  position: relative;
+  width: 14px;
+  height: 16px;
+  display: inline-block;
+  vertical-align: middle;
+  border: 1.5px solid currentColor;
+  border-top-left-radius: 2px;
+  border-top-right-radius: 2px;
+  border-bottom-left-radius: 7px;
+  border-bottom-right-radius: 7px;
+}
+.css-icon-shield::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  right: 3px;
+  bottom: 4px;
+  background-color: currentColor;
+  opacity: 0.25;
+}
+
+/* 10. Icona Flangia DN / Esagono Tecnico */
+.css-icon-hex {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid currentColor;
+  transform: rotate(45deg);
+  display: inline-block;
+}
+.css-icon-hex::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border: 1px solid currentColor;
+  opacity: 0.5;
+}
+
+/* 11. Icona Slider Ingegneristico */
+.css-icon-dial {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+  display: inline-block;
+}
+.css-icon-dial::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 6.5px;
+  width: 1.5px;
+  height: 5px;
+  background-color: var(--accent);
+}
+
+/* Scrollbar minimale ultra-pulita */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: #070708;
+}
+::-webkit-scrollbar-thumb {
+  background: #27272c;
+  border-radius: 0px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #ff3b1d;
+}
