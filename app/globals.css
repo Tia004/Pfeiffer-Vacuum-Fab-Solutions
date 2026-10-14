@@ -2,9 +2,10 @@
 
 :root {
   --bg: #070708;
-  --surface: #0d0d10;
-  --surface-raised: #121216;
-  --border: rgba(255, 255, 255, 0.11);
+  --surface: #0c0c0f;
+  --surface-raised: #121217;
+  --surface-elevated: #181820;
+  --border: rgba(255, 255, 255, 0.12);
   --border-strong: rgba(255, 255, 255, 0.28);
   --text: #f2f2f4;
   --muted: #7a7a85;
@@ -46,6 +47,41 @@ body {
 .bg-tech-dots {
   background-size: 24px 24px;
   background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+}
+
+/* Texture Alluminio Spazzolato Tecnico */
+.bg-brushed-metal {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.03) 0%,
+    rgba(255, 255, 255, 0.01) 50%,
+    rgba(255, 255, 255, 0.04) 100%
+  );
+}
+
+/* Marcatori Angolari Architettonici (Corner Crosshairs) */
+.tech-card {
+  position: relative;
+}
+.tech-card::before,
+.tech-card::after {
+  content: "";
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  pointer-events: none;
+}
+.tech-card::before {
+  top: -1px;
+  left: -1px;
+  border-top: 1.5px solid var(--accent);
+  border-left: 1.5px solid var(--accent);
+}
+.tech-card::after {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 1.5px solid var(--accent);
+  border-right: 1.5px solid var(--accent);
 }
 
 /* ==========================================================
@@ -240,67 +276,94 @@ body {
   100% { transform: scale(2.2); opacity: 0; }
 }
 
-/* 9. Icona Scudo Legale / Sicurezza */
-.css-icon-shield {
+/* 9. Icona Audio Altoparlante Pure CSS */
+.css-icon-speaker {
   position: relative;
   width: 14px;
-  height: 16px;
+  height: 14px;
   display: inline-block;
   vertical-align: middle;
-  border: 1.5px solid currentColor;
-  border-top-left-radius: 2px;
-  border-top-right-radius: 2px;
-  border-bottom-left-radius: 7px;
-  border-bottom-right-radius: 7px;
 }
-.css-icon-shield::after {
+.css-icon-speaker::before {
   content: "";
   position: absolute;
-  top: 3px;
-  left: 3px;
-  right: 3px;
-  bottom: 4px;
+  top: 4px;
+  left: 1px;
+  width: 5px;
+  height: 6px;
   background-color: currentColor;
-  opacity: 0.25;
+}
+.css-icon-speaker::after {
+  content: "";
+  position: absolute;
+  top: 1px;
+  left: 4px;
+  width: 0;
+  height: 0;
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-right: 7px solid currentColor;
 }
 
-/* 10. Icona Flangia DN / Esagono Tecnico */
-.css-icon-hex {
+/* 10. Icona Bilancia / Confronto Sistemi */
+.css-icon-scale {
   position: relative;
   width: 16px;
-  height: 16px;
-  border: 1.5px solid currentColor;
+  height: 14px;
+  display: inline-block;
+  vertical-align: middle;
+}
+.css-icon-scale::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 2px;
+  right: 2px;
+  height: 1.5px;
+  background-color: currentColor;
+}
+.css-icon-scale::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 7px;
+  width: 2px;
+  height: 14px;
+  background-color: currentColor;
+}
+
+/* 11. Icona Chevron Destra */
+.css-icon-chevron-right {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-top: 1.5px solid currentColor;
+  border-right: 1.5px solid currentColor;
   transform: rotate(45deg);
-  display: inline-block;
-}
-.css-icon-hex::after {
-  content: "";
-  position: absolute;
-  inset: 2px;
-  border: 1px solid currentColor;
-  opacity: 0.5;
+  vertical-align: middle;
 }
 
-/* 11. Icona Slider Ingegneristico */
-.css-icon-dial {
+/* 12. Icona Strati / Stadi CAD */
+.css-icon-layers {
   position: relative;
   width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  border: 1.5px solid currentColor;
+  height: 14px;
   display: inline-block;
+  vertical-align: middle;
 }
-.css-icon-dial::after {
+.css-icon-layers::before,
+.css-icon-layers::after {
   content: "";
   position: absolute;
-  top: 2px;
-  left: 6.5px;
-  width: 1.5px;
-  height: 5px;
-  background-color: var(--accent);
+  left: 1px;
+  right: 1px;
+  height: 2px;
+  border: 1px solid currentColor;
 }
+.css-icon-layers::before { top: 2px; }
+.css-icon-layers::after { bottom: 2px; }
 
-/* Scrollbar minimale ultra-pulita */
+/* Scrollbar minimale */
 ::-webkit-scrollbar {
   width: 5px;
   height: 5px;

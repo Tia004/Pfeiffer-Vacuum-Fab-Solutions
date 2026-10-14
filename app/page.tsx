@@ -2,6 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
+import { sound } from "@/utils/audio";
+import VacuumChamberSimulation from "@/components/VacuumChamberSimulation";
+import type { RenderShadingMode } from "@/components/TurbineCanvas";
 
 // Dynamic import of 3D Canvas to guarantee clean SSR & WebGL initialization
 const TurbineCanvas = dynamic(() => import("@/components/TurbineCanvas"), {
@@ -23,6 +26,17 @@ interface CookieConsentState {
   timestamp: string | null;
 }
 
+const STAGE_DETAILS = [
+  { name: "Stadio 01 — Cattura Molecolare Alto Flusso", angle: "42°", blades: 36, speed: "492 m/s", desc: "Apertura massima per catturare il cammino libero molecolare all'ingresso UHV." },
+  { name: "Stadio 02 — Prima Compressione Assiale", angle: "38°", blades: 34, speed: "471 m/s", desc: "Orientamento geometrico per accelerare le molecole verso il basso stadio." },
+  { name: "Stadio 03 — Compressione Intermedia", angle: "34°", blades: 32, speed: "450 m/s", desc: "Compressione molecolare progressiva con riduzione dello spazio assiale intermedio." },
+  { name: "Stadio 04 — Barriera Molecolare Centrale", angle: "30°", blades: 30, speed: "428 m/s", desc: "Rapporto di compressione elevato con geometria bilanciata a interferometro laser." },
+  { name: "Stadio 05 — Transizione Pre-Holweck", angle: "26°", blades: 28, speed: "407 m/s", desc: "Incremento della densità gassosa e transizione al regime di Knudsen." },
+  { name: "Stadio 06 — Compressione Molecole Pesanti", angle: "22°", blades: 26, speed: "386 m/s", desc: "Ottimizzato per idrocarburi residui e gas nobili pesanti (Ar, Xe)." },
+  { name: "Stadio 07 — Stadio Finale di Compressione", angle: "18°", blades: 24, speed: "365 m/s", desc: "Iniezione diretta del flusso nello stadio elicoidale di trascinamento Holweck." },
+  { name: "Stadio Holweck — Canali Elicoidali Molecolari", angle: "Helical", blades: 48, speed: "340 m/s", desc: "Canali di trascinamento molecolare ad altissima contropressione di scarico (fino a 25 hPa)." },
+];
+
 const PRODUCTS = [
   {
     id: "HP-80-NEO",
@@ -37,6 +51,8 @@ const PRODUCTS = [
     bearing: "Laser-Balanced Hybrid (Ceramica Si3N4 / Levitazione Magnetica)",
     powerConsumption: "110 W",
     soundLevel: "< 48 dB(A)",
+    weight: "2.8 kg",
+    cooling: "Convezione Naturale / Aria Forzata",
     description:
       "Pompa turbomolecolare compatta ad altissime prestazioni dotata di tecnologia Laser Balancing™ brevettata. Elimina le micro-vibrazioni parassite nei microscopi elettronici (SEM/TEM) e spettrometri di massa di precisione.",
   },
@@ -53,6 +69,8 @@ const PRODUCTS = [
     bearing: "Active 5-Axis Magnetic Levitation (Completamente Dry)",
     powerConsumption: "850 W",
     soundLevel: "< 52 dB(A)",
+    weight: "24.5 kg",
+    cooling: "Raffreddamento ad Acqua a Circuito Chiuso",
     description:
       "Progettata per litografia EUV di semiconduttori, acceleratori di particelle e impianti di fusione nucleare. Totalmente esente da manutenzione e lubrificanti grazie al controllo digitale attivo del rotore su 5 assi a 40 kHz.",
   },
@@ -69,6 +87,8 @@ const PRODUCTS = [
     bearing: "Doppia Spirale Orbitale ermetica totalmente oil-free",
     powerConsumption: "280 W",
     soundLevel: "< 47 dB(A)",
+    weight: "19.0 kg",
+    cooling: "Ventilazione Elettronica Integrata",
     description:
       "Sistema di pompaggio primario a secco con emissione acustica ultra-silenziosa e motore sincrono IPM ad altissima efficienza. Interfaccia RS-485 integrata per telemetria remota FabLink.",
   },
@@ -85,8 +105,49 @@ const PRODUCTS = [
     bearing: "Spettrometro di Massa Magnetico a 180° integrato",
     powerConsumption: "350 W",
     soundLevel: "< 54 dB(A)",
+    weight: "32.0 kg",
+    cooling: "Convezione Aria Elettroassistita",
     description:
       "Strumento di rilevamento perdite a spettrometria di massa per collaudo non distruttivo di componenti aerospaziali, criogenici e camere a vuoto per semiconduttori con calibrazione automatica al quarzo.",
+  },
+];
+
+const APPLICATION_CASE_STUDIES = [
+  {
+    id: "semicon",
+    title: "Litografia Semiconduttori EUV (High-NA)",
+    sector: "SEMICONDUCTOR FABRICATION // 2NM NODE",
+    targetVacuum: "< 1 · 10⁻¹⁰ hPa",
+    gasEnvironment: "Idrogeno Puro (H₂) con Flusso Continuo",
+    solution: "HiPace® 2300 M con Levitazione Magnetica Attiva",
+    challenge:
+      "Nelle macchine fotolitografiche EUV (lunghezza d'onda 13.5 nm), i fotoni vengono assorbiti da qualunque molecola d'aria. Occorre un ultra-alto vuoto assoluto privo di idrocarburi per non opacizzare gli specchi ottici multistrato.",
+    result:
+      "Azzeramento contaminazione organica, affidabilità operativa continua > 120.000 ore senza interruzione e controllo vibrazionale sub-nanometrico sulle cialde di silicio.",
+  },
+  {
+    id: "cern",
+    title: "Acceleratori di Particelle & Fusione (CERN/ITER)",
+    sector: "HIGH ENERGY PHYSICS // SYNCHROTRON",
+    targetVacuum: "< 1 · 10⁻¹¹ hPa (XHV)",
+    gasEnvironment: "Gas Residui Desorbiti da Raggiro Criogenico",
+    solution: "Stadi Ibridi Laser Balancing™ con Tolleranza Radiazioni",
+    challenge:
+      "Mantenere il cammino libero medio dei protoni a velocità prossima a quella della luce per milioni di chilometri senza collisioni molecolari all'interno dei tubi a vuoto di 27 km dell'LHC.",
+    result:
+      "Pressione molecolare costante nell'ordine di 10⁻¹² hPa, tolleranza a campi magnetici intensi e schermatura contro radiazioni gamma.",
+  },
+  {
+    id: "space",
+    title: "Simulazione Spaziale Profonda (ESA / NASA TVAC)",
+    sector: "AEROSPACE & THERMAL VACUUM CHAMBERS",
+    targetVacuum: "1 · 10⁻⁸ hPa",
+    gasEnvironment: "Degassamento Termico da Materiali Compositi",
+    solution: "Combinazione HiPace® 700 H + HiScroll® 12 Oil-Free",
+    challenge:
+      "Replicare lo spazio interplanetario profondo (geostazionario e lunare) per verificare il comportamento termico e meccanico di satelliti, telescopi orbitali e sonde spaziali prima del lancio.",
+    result:
+      "Capacità di evacuare camere volumetriche fino a 600.000 litri con assenza totale di vapori d'olio condensabili sulle lenti ottiche dei satelliti.",
   },
 ];
 
@@ -94,20 +155,30 @@ export default function PfeifferVacuumSite() {
   // 3D Engine & Live Telemetry States
   const [scrollProgress, setScrollProgress] = useState(0);
   const [rpmMode, setRpmMode] = useState<"nominal" | "overdrive" | "standby">("nominal");
+  const [shadingMode, setShadingMode] = useState<RenderShadingMode>("solid");
+  const [selectedStage, setSelectedStage] = useState<number | null>(null);
   const [explodedView, setExplodedView] = useState(false);
   const [livePressureExp, setLivePressureExp] = useState(-10.42);
   const [rotorTemp, setRotorTemp] = useState(34.2);
   const [selectedFilter, setSelectedFilter] = useState<"all" | "turbo" | "dry" | "leak">("all");
+  const [soundEnabled, setSoundEnabled] = useState(false);
 
   // Vacuum Chamber Simulator States
   const [chamberVolume, setChamberVolume] = useState<number>(120); // Liters
   const [selectedGas, setSelectedGas] = useState<"N2" | "He" | "Ar" | "H2">("N2");
   const [targetExponent, setTargetExponent] = useState<number>(-9);
 
+  // Comparison Drawer State
+  const [compareList, setCompareList] = useState<string[]>([]);
+  const [showCompareModal, setShowCompareModal] = useState(false);
+
   // Technical Datasheet & B2B Quote Modal
   const [activeProduct, setActiveProduct] = useState<(typeof PRODUCTS)[0] | null>(null);
   const [quoteSubmitted, setQuoteSubmitted] = useState(false);
   const [copiedPartNo, setCopiedPartNo] = useState(false);
+
+  // Active Application Tab
+  const [activeAppIndex, setActiveAppIndex] = useState(0);
 
   // GDPR & Legal Compliance States
   const [legalModal, setLegalModal] = useState<LegalTab>(null);
@@ -119,6 +190,14 @@ export default function PfeifferVacuumSite() {
     marketing: false,
     timestamp: null,
   });
+
+  // Sound Engine Toggle
+  const toggleSound = () => {
+    const next = !soundEnabled;
+    setSoundEnabled(next);
+    sound.enabled = next;
+    if (next) sound.playClick(1500);
+  };
 
   // Scroll listener for 3D engine motion interpolation
   useEffect(() => {
@@ -165,12 +244,13 @@ export default function PfeifferVacuumSite() {
   }, []);
 
   const saveCookiePreferences = (newState: CookieConsentState) => {
+    sound.playClick(1000);
     const withTime = { ...newState, timestamp: new Date().toISOString() };
     setCookieConsent(withTime);
     try {
       localStorage.setItem("pfeiffer_gdpr_consent_v1", JSON.stringify(withTime));
     } catch {
-      // Fallback if local storage restricted
+      // Fallback
     }
     setShowCookieBanner(false);
     setShowCookieSettings(false);
@@ -230,6 +310,7 @@ export default function PfeifferVacuumSite() {
   });
 
   const handleCopyPartNo = (id: string) => {
+    sound.playClick(1800);
     try {
       navigator.clipboard.writeText(id);
       setCopiedPartNo(true);
@@ -239,15 +320,30 @@ export default function PfeifferVacuumSite() {
     }
   };
 
+  const toggleCompare = (id: string) => {
+    sound.playClick(1200);
+    setCompareList((prev) => {
+      if (prev.includes(id)) {
+        return prev.filter((item) => item !== id);
+      }
+      if (prev.length >= 3) {
+        return [...prev.slice(1), id];
+      }
+      return [...prev, id];
+    });
+  };
+
+  const comparedProducts = PRODUCTS.filter((p) => compareList.includes(p.id));
+
   return (
     <div className="min-h-screen bg-[#070708] text-[#f2f2f4] bg-tech-grid relative selection:bg-[#ff3b1d] selection:text-black">
       {/* =====================================================================
-          HEADER BRUTALISTA MINIMAL CON TELEMETRIA IN TEMPO REALE
+          HEADER BRUTALISTA MINIMAL CON TELEMETRIA IN TEMPO REALE & AUDIO HAPTICS
           ===================================================================== */}
-      <header className="sticky top-0 z-40 backdrop-blur-md bg-[#070708]/90 border-b border-white/10">
+      <header className="sticky top-0 z-40 backdrop-blur-md bg-[#070708]/92 border-b border-white/12">
         <div className="max-w-[1440px] mx-auto grid grid-cols-2 lg:grid-cols-12 items-center">
           {/* Brand Identity */}
-          <div className="col-span-1 lg:col-span-3 p-4 lg:px-6 border-r border-white/10 flex items-center justify-between">
+          <div className="col-span-1 lg:col-span-3 p-4 lg:px-6 border-r border-white/12 flex items-center justify-between">
             <a href="#" className="flex items-center gap-3 group">
               <span className="css-icon-turbine text-[#ff3b1d] transition-transform duration-700 group-hover:rotate-180" />
               <div>
@@ -263,7 +359,7 @@ export default function PfeifferVacuumSite() {
           </div>
 
           {/* Telemetria Live Header */}
-          <div className="hidden lg:flex lg:col-span-4 px-6 py-4 border-r border-white/10 items-center justify-between font-mono text-[11px]">
+          <div className="hidden lg:flex lg:col-span-4 px-6 py-4 border-r border-white/12 items-center justify-between font-mono text-[11px]">
             <div>
               <span className="text-zinc-500 block text-[9px] uppercase tracking-wider">
                 CHAMBER VACUUM
@@ -272,7 +368,7 @@ export default function PfeifferVacuumSite() {
                 1.0 × 10^{livePressureExp} hPa
               </span>
             </div>
-            <div className="h-5 w-[1px] bg-white/10" />
+            <div className="h-5 w-[1px] bg-white/12" />
             <div>
               <span className="text-zinc-500 block text-[9px] uppercase tracking-wider">
                 ROTOR VELOCITY
@@ -285,7 +381,7 @@ export default function PfeifferVacuumSite() {
                   : "1,250 Hz (75k RPM)"}
               </span>
             </div>
-            <div className="h-5 w-[1px] bg-white/10" />
+            <div className="h-5 w-[1px] bg-white/12" />
             <div>
               <span className="text-zinc-500 block text-[9px] uppercase tracking-wider">
                 CORE TEMP
@@ -295,23 +391,40 @@ export default function PfeifferVacuumSite() {
           </div>
 
           {/* Navigazione Architettonica */}
-          <nav className="hidden lg:flex lg:col-span-3 px-6 py-4 border-r border-white/10 items-center justify-around font-mono text-xs uppercase tracking-wider text-zinc-400">
+          <nav className="hidden lg:flex lg:col-span-3 px-6 py-4 border-r border-white/12 items-center justify-around font-mono text-xs uppercase tracking-wider text-zinc-400">
             <a href="#architettura" className="hover:text-white hover:text-[#ff3b1d] transition-colors">
               01.Fisica
             </a>
             <a href="#catalogo" className="hover:text-white hover:text-[#ff3b1d] transition-colors">
               02.Sistemi
             </a>
+            <a href="#applicazioni" className="hover:text-white hover:text-[#ff3b1d] transition-colors">
+              03.Fabs
+            </a>
             <a href="#simulatore" className="hover:text-white hover:text-[#ff3b1d] transition-colors">
-              03.Calcolo
+              04.Calcolo
             </a>
           </nav>
 
-          {/* CTA Tecnica */}
-          <div className="col-span-1 lg:col-span-2 p-3 sm:p-4 lg:px-6 flex justify-end">
+          {/* Audio Haptics Toggle & CTA */}
+          <div className="col-span-1 lg:col-span-2 p-3 sm:p-4 lg:px-6 flex items-center justify-end gap-3">
+            <button
+              type="button"
+              onClick={toggleSound}
+              title="Attiva/Disattiva Suoni Tattili Meccanici"
+              className={`p-2 border font-mono text-[10px] uppercase transition-colors flex items-center gap-1.5 ${
+                soundEnabled
+                  ? "border-[#ff3b1d] text-[#ff3b1d] bg-[#ff3b1d]/10"
+                  : "border-white/15 text-zinc-400 hover:text-white hover:border-white/30"
+              }`}
+            >
+              <span className="css-icon-speaker" />
+              <span className="hidden sm:inline">{soundEnabled ? "AUDIO ON" : "AUDIO OFF"}</span>
+            </button>
+
             <a
               href="#catalogo"
-              className="w-full lg:w-auto px-4 py-2 bg-[#ff3b1d] text-black font-mono text-xs font-semibold uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-white transition-colors"
+              className="px-3 sm:px-4 py-2 bg-[#ff3b1d] text-black font-mono text-xs font-semibold uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-white transition-colors"
             >
               <span>Spec Sheet</span>
               <span className="css-icon-arrow-ne" />
@@ -321,12 +434,12 @@ export default function PfeifferVacuumSite() {
       </header>
 
       {/* =====================================================================
-          HERO SECTION + VIEWPORT 3D WEBGL PROCEDURALE
+          HERO SECTION + VIEWPORT 3D WEBGL CON CONTROLLI ORBITALI E STAGE INSPECTOR
           ===================================================================== */}
-      <section className="relative border-b border-white/10 overflow-hidden">
-        <div className="max-w-[1440px] mx-auto grid grid-cols-1 lg:grid-cols-12 min-h-[86vh]">
+      <section className="relative border-b border-white/12 overflow-hidden">
+        <div className="max-w-[1440px] mx-auto grid grid-cols-1 lg:grid-cols-12 min-h-[88vh]">
           {/* Colonna Sinistra: Tipografia & Controlli */}
-          <div className="lg:col-span-6 p-6 sm:p-10 lg:p-14 border-b lg:border-b-0 lg:border-r border-white/10 flex flex-col justify-between z-10">
+          <div className="lg:col-span-6 p-6 sm:p-10 lg:p-14 border-b lg:border-b-0 lg:border-r border-white/12 flex flex-col justify-between z-10">
             <div>
               <div className="inline-flex items-center gap-3 px-3 py-1 border border-white/15 bg-white/[0.02] font-mono text-[11px] uppercase tracking-widest text-zinc-300 mb-8">
                 <span className="w-2 h-2 bg-[#ff3b1d] inline-block" />
@@ -342,22 +455,22 @@ export default function PfeifferVacuumSite() {
               </h1>
 
               <p className="text-zinc-400 text-sm sm:text-base max-w-xl leading-relaxed font-normal mb-8">
-                Dal 1890 sviluppiamo la fisica dell&apos;ultra-alto vuoto per la litografia
-                EUV a semiconduttori, gli anelli del CERN e la simulazione spaziale profonda.
+                Dal 1890 sviluppiamo la cinematica dell&apos;ultra-alto vuoto per la litografia
+                EUV dei semiconduttori, i tubi a vuoto del CERN e i simulatori orbitali spaziali.
                 Pressioni molecolari estreme fino a{" "}
                 <span className="text-white font-mono font-medium">10⁻¹² hPa</span>.
               </p>
             </div>
 
             {/* Console di Controllo 3D Interattiva */}
-            <div className="border border-white/15 bg-[#0c0c0f]/90 p-5 space-y-4">
+            <div className="tech-card border border-white/15 bg-[#0c0c0f]/95 p-5 space-y-4">
               <div className="flex items-center justify-between border-b border-white/10 pb-3">
                 <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-zinc-300">
                   <span className="css-icon-crosshair text-[#ff3b1d]" />
                   <span>CONTROLLO ROTORE 3D INTERATTIVO (HIPACE CORE)</span>
                 </div>
                 <span className="font-mono text-[10px] text-zinc-500">
-                  DRAG / SCROLL / EXPLODE
+                  DRAG 360° / SCROLL / ZOOM
                 </span>
               </div>
 
@@ -372,8 +485,11 @@ export default function PfeifferVacuumSite() {
                       <button
                         key={mode}
                         type="button"
-                        onClick={() => setRpmMode(mode)}
-                        className={`py-2 px-2 font-mono text-[10px] uppercase tracking-wider transition-colors ${
+                        onClick={() => {
+                          sound.playClick(mode === "overdrive" ? 1800 : mode === "standby" ? 700 : 1200);
+                          setRpmMode(mode);
+                        }}
+                        className={`py-2 px-1 font-mono text-[10px] uppercase tracking-wider transition-colors ${
                           rpmMode === mode
                             ? "bg-[#ff3b1d] text-black font-semibold"
                             : "text-zinc-400 hover:text-white hover:bg-white/5"
@@ -385,67 +501,113 @@ export default function PfeifferVacuumSite() {
                   </div>
                 </div>
 
-                {/* Toggle Vista Esplosa */}
+                {/* Shading Mode (Solido / Wireframe / Termico) */}
                 <div>
                   <label className="block font-mono text-[10px] uppercase text-zinc-500 mb-2">
-                    ISPEZIONE STADI DI COMPRESSIONE
+                    MODALITÀ DI VISUALIZZAZIONE CAD
                   </label>
-                  <button
-                    type="button"
-                    onClick={() => setExplodedView((prev) => !prev)}
-                    className={`w-full py-2 px-3 border font-mono text-[11px] uppercase tracking-wider flex items-center justify-between transition-colors ${
-                      explodedView
-                        ? "border-[#ff3b1d] bg-[#ff3b1d]/15 text-white"
-                        : "border-white/15 text-zinc-300 hover:border-white/40"
-                    }`}
-                  >
-                    <span>
-                      {explodedView ? "VISTA ESPLOSA: ATTIVA" : "ATTIVA VISTA ESPLOSA"}
-                    </span>
-                    <span className="css-icon-chamber" />
-                  </button>
+                  <div className="grid grid-cols-3 border border-white/15">
+                    {[
+                      { key: "solid", label: "SOLIDO" },
+                      { key: "wireframe", label: "CAD MESH" },
+                      { key: "thermal", label: "TERMICA" },
+                    ].map((m) => (
+                      <button
+                        key={m.key}
+                        type="button"
+                        onClick={() => {
+                          sound.playClick(1400);
+                          setShadingMode(m.key as RenderShadingMode);
+                        }}
+                        className={`py-2 px-1 font-mono text-[10px] uppercase tracking-wider transition-colors ${
+                          shadingMode === m.key
+                            ? "bg-white text-black font-semibold"
+                            : "text-zinc-400 hover:text-white hover:bg-white/5"
+                        }`}
+                      >
+                        {m.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
-              {/* Parametri di Telemetria Stadi */}
-              <div className="grid grid-cols-3 pt-2 border-t border-white/10 font-mono text-[11px]">
-                <div>
-                  <span className="text-zinc-500 block text-[9px]">STADI ROTORE</span>
-                  <span>7 ASSIALI + HOLWECK</span>
+              {/* Tasto Vista Esplosa Assiale */}
+              <button
+                type="button"
+                onClick={() => {
+                  sound.playToggle();
+                  setExplodedView((prev) => !prev);
+                }}
+                className={`w-full py-2.5 px-3 border font-mono text-[11px] uppercase tracking-wider flex items-center justify-between transition-colors ${
+                  explodedView
+                    ? "border-[#ff3b1d] bg-[#ff3b1d]/15 text-white"
+                    : "border-white/15 text-zinc-300 hover:border-white/40"
+                }`}
+              >
+                <span>
+                  {explodedView ? "VISTA ESPLOSA ASSIALE: ATTIVA (7 STADI)" : "ATTIVA VISTA ESPLOSA DEI 7 STADI"}
+                </span>
+                <span className="css-icon-chamber" />
+              </button>
+
+              {/* Box Ispezione Stadio Selezionato */}
+              {selectedStage !== null ? (
+                <div className="p-3 border border-[#ff3b1d]/40 bg-[#ff3b1d]/[0.08] font-mono text-xs space-y-1">
+                  <div className="flex items-center justify-between text-[#ff3b1d] font-semibold uppercase">
+                    <span>{STAGE_DETAILS[selectedStage].name}</span>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedStage(null)}
+                      className="text-zinc-400 hover:text-white"
+                    >
+                      [CHIUDI]
+                    </button>
+                  </div>
+                  <div className="text-zinc-300 text-[11px] font-sans">
+                    {STAGE_DETAILS[selectedStage].desc}
+                  </div>
+                  <div className="grid grid-cols-3 pt-2 text-[10px] text-zinc-400 border-t border-white/10">
+                    <div>PITCH: <span className="text-white">{STAGE_DETAILS[selectedStage].angle}</span></div>
+                    <div>LAME: <span className="text-white">{STAGE_DETAILS[selectedStage].blades}</span></div>
+                    <div>VELOCITÀ: <span className="text-[#ff3b1d]">{STAGE_DETAILS[selectedStage].speed}</span></div>
+                  </div>
                 </div>
-                <div>
-                  <span className="text-zinc-500 block text-[9px]">BILANCIAMENTO</span>
-                  <span>LASER &lt; 0.01 µm</span>
+              ) : (
+                <div className="text-[10px] font-mono text-zinc-500 text-center py-1">
+                  [SUGGERIMENTO: CLICCA SU UNO STADIO NEL 3D O SUL TASTO ESPLOSO PER LA SCHEDA CINEMATICA]
                 </div>
-                <div>
-                  <span className="text-zinc-500 block text-[9px]">RAPPORTO N₂</span>
-                  <span className="text-[#ff3b1d]">&gt; 1 · 10¹¹</span>
-                </div>
-              </div>
+              )}
             </div>
           </div>
 
-          {/* Colonna Destra: Viewport 3D WebGL */}
-          <div className="lg:col-span-6 relative min-h-[480px] lg:min-h-full bg-gradient-to-b from-[#0b0b0e] to-[#070708] flex items-center justify-center">
+          {/* Colonna Destra: Viewport 3D WebGL con OrbitControls */}
+          <div className="lg:col-span-6 relative min-h-[500px] lg:min-h-full bg-gradient-to-b from-[#0b0b0e] to-[#070708] flex items-center justify-center cursor-grab active:cursor-grabbing">
             {/* Marcatori Angolari Tecnici */}
             <div className="absolute top-6 left-6 pointer-events-none font-mono text-[10px] text-zinc-500 space-y-1 z-10">
-              <div>MODEL: HIPACE-TURBO-7S</div>
-              <div>RENDER: REALTIME PROCEDURAL WEBGL</div>
+              <div>MODEL: HIPACE-TURBO-7S // UHV SERIES</div>
+              <div>RENDER: REALTIME PROCEDURAL WEBGL (THREE.JS)</div>
               <div>MATERIAL: TI-6AL-4V / CERAMIC SI3N4</div>
             </div>
 
             <div className="absolute bottom-6 right-6 pointer-events-none font-mono text-[10px] text-zinc-500 text-right z-10">
-              <div>AXIAL CLEARANCE: 0.15 MM</div>
+              <div>ORBIT CONTROLS: ACTIVE</div>
               <div className="text-[#ff3b1d] font-semibold">
-                STATUS: {explodedView ? "STAGE DIAGNOSTIC" : "OPERATIONAL LOCK"}
+                STATUS: {explodedView ? "AXIAL STAGE DIAGNOSTIC" : "OPERATIONAL LOCK"}
               </div>
             </div>
 
-            <div className="w-full h-[520px] lg:h-[720px]">
+            <div className="w-full h-[520px] lg:h-[740px]">
               <TurbineCanvas
                 scrollProgress={scrollProgress}
                 rpmMode={rpmMode}
                 explodedView={explodedView}
+                shadingMode={shadingMode}
+                selectedStage={selectedStage}
+                onSelectStage={(idx) => {
+                  sound.playClick(1600);
+                  setSelectedStage(idx);
+                }}
               />
             </div>
           </div>
@@ -455,10 +617,10 @@ export default function PfeifferVacuumSite() {
       {/* =====================================================================
           SEZIONE 01: FISICA MOLECOLARE & ARCHITETTURA DEL VUOTO
           ===================================================================== */}
-      <section id="architettura" className="border-b border-white/10">
+      <section id="architettura" className="border-b border-white/12">
         <div className="max-w-[1440px] mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-12 border-b border-white/10">
-            <div className="lg:col-span-4 p-6 sm:p-10 border-b lg:border-b-0 lg:border-r border-white/10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 border-b border-white/12">
+            <div className="lg:col-span-4 p-6 sm:p-10 border-b lg:border-b-0 lg:border-r border-white/12">
               <div className="font-mono text-xs text-[#ff3b1d] uppercase tracking-widest mb-2">
                 // 01. CINEMATICA MOLECOLARE
               </div>
@@ -476,7 +638,7 @@ export default function PfeifferVacuumSite() {
 
           {/* 3 Pilastri Tecnologici con Icone Pure CSS */}
           <div className="grid grid-cols-1 md:grid-cols-3">
-            <div className="p-6 sm:p-10 border-b md:border-b-0 md:border-r border-white/10 flex flex-col justify-between group hover:bg-white/[0.015] transition-colors">
+            <div className="tech-card p-6 sm:p-10 border-b md:border-b-0 md:border-r border-white/12 flex flex-col justify-between group hover:bg-white/[0.015] transition-colors">
               <div>
                 <div className="flex items-center justify-between mb-8">
                   <span className="font-mono text-xs text-zinc-500">SPEC // 01.A</span>
@@ -485,19 +647,19 @@ export default function PfeifferVacuumSite() {
                 <h3 className="text-xl font-medium uppercase tracking-tight mb-3">
                   Laser Balancing™
                 </h3>
-                <p className="text-zinc-400 text-sm leading-relaxed mb-6">
+                <p className="text-zinc-400 text-sm leading-relaxed mb-6 font-sans">
                   Durante la rotazione nominale a 90.000 RPM, un fascio laser ad impulsi di
                   femtosecondi asporta masse nanometriche dal rotore in tempo reale, azzerando le
                   micro-vibrazioni critiche per la microscopia elettronica (SEM/TEM).
                 </p>
               </div>
-              <div className="pt-4 border-t border-white/10 font-mono text-xs text-zinc-300 flex justify-between">
+              <div className="pt-4 border-t border-white/12 font-mono text-xs text-zinc-300 flex justify-between">
                 <span>AMP. VIBRAZIONI</span>
                 <span className="text-[#ff3b1d]">&lt; 0.005 µm</span>
               </div>
             </div>
 
-            <div className="p-6 sm:p-10 border-b md:border-b-0 md:border-r border-white/10 flex flex-col justify-between group hover:bg-white/[0.015] transition-colors">
+            <div className="tech-card p-6 sm:p-10 border-b md:border-b-0 md:border-r border-white/12 flex flex-col justify-between group hover:bg-white/[0.015] transition-colors">
               <div>
                 <div className="flex items-center justify-between mb-8">
                   <span className="font-mono text-xs text-zinc-500">SPEC // 01.B</span>
@@ -506,18 +668,18 @@ export default function PfeifferVacuumSite() {
                 <h3 className="text-xl font-medium uppercase tracking-tight mb-3">
                   Levitazione Attiva 5 Assi
                 </h3>
-                <p className="text-zinc-400 text-sm leading-relaxed mb-6">
+                <p className="text-zinc-400 text-sm leading-relaxed mb-6 font-sans">
                   Sospensione elettromagnetica guidata da DSP a 40 kHz. Assenza totale di contatto
                   meccanico, zero usura da sfregamento e zero idrocarburi per camere bianche ISO Classe 1.
                 </p>
               </div>
-              <div className="pt-4 border-t border-white/10 font-mono text-xs text-zinc-300 flex justify-between">
+              <div className="pt-4 border-t border-white/12 font-mono text-xs text-zinc-300 flex justify-between">
                 <span>ATTRITO MECCANICO</span>
                 <span className="text-emerald-400">0.00 N·m (NULLO)</span>
               </div>
             </div>
 
-            <div className="p-6 sm:p-10 flex flex-col justify-between group hover:bg-white/[0.015] transition-colors">
+            <div className="tech-card p-6 sm:p-10 flex flex-col justify-between group hover:bg-white/[0.015] transition-colors">
               <div>
                 <div className="flex items-center justify-between mb-8">
                   <span className="font-mono text-xs text-zinc-500">SPEC // 01.C</span>
@@ -531,12 +693,12 @@ export default function PfeifferVacuumSite() {
                 <h3 className="text-xl font-medium uppercase tracking-tight mb-3">
                   Stadi Holweck Elicoidali
                 </h3>
-                <p className="text-zinc-400 text-sm leading-relaxed mb-6">
+                <p className="text-zinc-400 text-sm leading-relaxed mb-6 font-sans">
                   Canali di trascinamento molecolare ad alta compressione che consentono rapporti
                   per idrogeno ed elio fino a 10⁸, riducendo drasticamente il carico della pompa primaria.
                 </p>
               </div>
-              <div className="pt-4 border-t border-white/10 font-mono text-xs text-zinc-300 flex justify-between">
+              <div className="pt-4 border-t border-white/12 font-mono text-xs text-zinc-300 flex justify-between">
                 <span>EFFICIENZA ENERGETICA</span>
                 <span className="text-[#ff3b1d]">+62% VS STANDARD</span>
               </div>
@@ -548,9 +710,9 @@ export default function PfeifferVacuumSite() {
       {/* =====================================================================
           SEZIONE 02: HARDWARE MATRIX & SPECIFICHE PRODOTTI REALI PFEIFFER
           ===================================================================== */}
-      <section id="catalogo" className="border-b border-white/10">
+      <section id="catalogo" className="border-b border-white/12">
         <div className="max-w-[1440px] mx-auto">
-          <div className="p-6 sm:p-10 border-b border-white/10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="p-6 sm:p-10 border-b border-white/12 flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div>
               <div className="font-mono text-xs text-[#ff3b1d] uppercase tracking-widest mb-2">
                 // 02. HARDWARE MATRIX
@@ -560,8 +722,8 @@ export default function PfeifferVacuumSite() {
               </h2>
             </div>
             
-            {/* Filtro Tipologia Sistemi */}
-            <div className="flex flex-wrap gap-2 font-mono text-xs">
+            {/* Filtro Tipologia Sistemi & Confronto */}
+            <div className="flex flex-wrap items-center gap-2 font-mono text-xs">
               {[
                 { key: "all", label: "TUTTI I SISTEMI" },
                 { key: "turbo", label: "TURBOPOMPE UHV" },
@@ -571,7 +733,10 @@ export default function PfeifferVacuumSite() {
                 <button
                   key={f.key}
                   type="button"
-                  onClick={() => setSelectedFilter(f.key as typeof selectedFilter)}
+                  onClick={() => {
+                    sound.playClick(1100);
+                    setSelectedFilter(f.key as typeof selectedFilter);
+                  }}
                   className={`px-3 py-1.5 border transition-colors ${
                     selectedFilter === f.key
                       ? "border-[#ff3b1d] bg-[#ff3b1d] text-black font-semibold"
@@ -581,92 +746,241 @@ export default function PfeifferVacuumSite() {
                   {f.label}
                 </button>
               ))}
+
+              {compareList.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    sound.playToggle();
+                    setShowCompareModal(true);
+                  }}
+                  className="px-3 py-1.5 border border-emerald-400 bg-emerald-400/15 text-emerald-300 font-semibold uppercase flex items-center gap-2 hover:bg-emerald-400 hover:text-black transition-colors"
+                >
+                  <span className="css-icon-scale" />
+                  <span>CONFRONTA ({compareList.length})</span>
+                </button>
+              )}
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2">
-            {filteredProducts.map((product, index) => (
-              <div
-                key={product.id}
-                onClick={() => {
-                  setActiveProduct(product);
-                  setQuoteSubmitted(false);
-                }}
-                className={`p-6 sm:p-10 border-b border-white/10 ${
-                  index % 2 === 0 ? "md:border-r" : ""
-                } cursor-pointer group hover:bg-white/[0.02] transition-all flex flex-col justify-between`}
-              >
-                <div>
-                  <div className="flex items-center justify-between font-mono text-xs text-zinc-500 mb-4">
-                    <span className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 bg-[#ff3b1d] inline-block" />
-                      <span>PART NO // {product.id}</span>
-                    </span>
-                    <span className="px-2 py-0.5 border border-white/15 text-zinc-300 group-hover:border-[#ff3b1d] group-hover:text-[#ff3b1d] transition-colors">
-                      {product.flange}
-                    </span>
-                  </div>
-
-                  <h3 className="text-2xl sm:text-3xl font-normal tracking-tight mb-1 group-hover:text-[#ff3b1d] transition-colors">
-                    {product.name}
-                  </h3>
-                  <div className="font-mono text-xs text-zinc-400 uppercase mb-6">
-                    {product.category}
-                  </div>
-
-                  <p className="text-zinc-400 text-sm leading-relaxed mb-8">
-                    {product.description}
-                  </p>
-                </div>
-
-                <div>
-                  <div className="grid grid-cols-3 gap-2 py-4 border-y border-white/10 font-mono text-xs mb-5">
-                    <div>
-                      <span className="text-[10px] text-zinc-500 block">
-                        PORTATA NOMINALE
+            {filteredProducts.map((product, index) => {
+              const isCompared = compareList.includes(product.id);
+              return (
+                <div
+                  key={product.id}
+                  className={`tech-card p-6 sm:p-10 border-b border-white/12 ${
+                    index % 2 === 0 ? "md:border-r" : ""
+                  } group hover:bg-white/[0.02] transition-all flex flex-col justify-between`}
+                >
+                  <div>
+                    <div className="flex items-center justify-between font-mono text-xs text-zinc-500 mb-4">
+                      <span className="flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 bg-[#ff3b1d] inline-block" />
+                        <span>PART NO // {product.id}</span>
                       </span>
-                      <span className="text-white">{product.pumpingSpeed}</span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleCompare(product.id);
+                          }}
+                          className={`px-2 py-0.5 border text-[10px] uppercase font-mono transition-colors ${
+                            isCompared
+                              ? "border-emerald-400 text-emerald-300 bg-emerald-400/15"
+                              : "border-white/15 text-zinc-400 hover:border-white/40 hover:text-white"
+                          }`}
+                        >
+                          {isCompared ? (
+                            <span className="inline-flex items-center gap-1">
+                              <span className="css-icon-check" />
+                              <span>IN CONFRONTO</span>
+                            </span>
+                          ) : (
+                            <span>+ CONFRONTA</span>
+                          )}
+                        </button>
+                        <span className="px-2 py-0.5 border border-white/15 text-zinc-300">
+                          {product.flange}
+                        </span>
+                      </div>
                     </div>
-                    <div>
-                      <span className="text-[10px] text-zinc-500 block">
-                        PRESSIONE LIMITE
-                      </span>
-                      <span className="text-emerald-400">{product.ultimatePressure}</span>
+
+                    <h3
+                      onClick={() => {
+                        sound.playClick(1400);
+                        setActiveProduct(product);
+                        setQuoteSubmitted(false);
+                      }}
+                      className="text-2xl sm:text-3xl font-normal tracking-tight mb-1 cursor-pointer group-hover:text-[#ff3b1d] transition-colors"
+                    >
+                      {product.name}
+                    </h3>
+                    <div className="font-mono text-xs text-zinc-400 uppercase mb-6">
+                      {product.category}
                     </div>
-                    <div>
-                      <span className="text-[10px] text-zinc-500 block">ROTAZIONE</span>
-                      <span className="text-white">{product.rpm}</span>
-                    </div>
+
+                    <p className="text-zinc-400 text-sm leading-relaxed mb-8 font-sans">
+                      {product.description}
+                    </p>
                   </div>
 
-                  <div className="flex items-center justify-between font-mono text-xs uppercase tracking-wider">
-                    <span className="text-zinc-300 group-hover:text-white">
-                      APRI SCHEDA DATI & PREVENTIVO
-                    </span>
-                    <span className="css-icon-arrow-ne text-[#ff3b1d] group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                  <div>
+                    <div className="grid grid-cols-3 gap-2 py-4 border-y border-white/12 font-mono text-xs mb-5">
+                      <div>
+                        <span className="text-[10px] text-zinc-500 block">
+                          PORTATA NOMINALE
+                        </span>
+                        <span className="text-white">{product.pumpingSpeed}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-zinc-500 block">
+                          PRESSIONE LIMITE
+                        </span>
+                        <span className="text-emerald-400">{product.ultimatePressure}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-zinc-500 block">ROTAZIONE</span>
+                        <span className="text-white">{product.rpm}</span>
+                      </div>
+                    </div>
+
+                    <div
+                      onClick={() => {
+                        sound.playClick(1400);
+                        setActiveProduct(product);
+                        setQuoteSubmitted(false);
+                      }}
+                      className="cursor-pointer flex items-center justify-between font-mono text-xs uppercase tracking-wider"
+                    >
+                      <span className="text-zinc-300 group-hover:text-white">
+                        APRI SCHEDA DATI & PREVENTIVO B2B
+                      </span>
+                      <span className="css-icon-arrow-ne text-[#ff3b1d] group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
 
       {/* =====================================================================
-          SEZIONE 03: SIMULATORE CONDUTTANZA E PUMP-DOWN CAMERA UHV
+          SEZIONE 03: CASE STUDIES & APPLICAZIONI INDUSTRIALI CRITICHE (FABS)
           ===================================================================== */}
-      <section id="simulatore" className="border-b border-white/10">
-        <div className="max-w-[1440px] mx-auto grid grid-cols-1 lg:grid-cols-12">
-          {/* Parametri di Input */}
-          <div className="lg:col-span-6 p-6 sm:p-10 lg:p-12 border-b lg:border-b-0 lg:border-r border-white/10 space-y-8">
+      <section id="applicazioni" className="border-b border-white/12">
+        <div className="max-w-[1440px] mx-auto">
+          <div className="p-6 sm:p-10 border-b border-white/12 flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
               <div className="font-mono text-xs text-[#ff3b1d] uppercase tracking-widest mb-2">
-                // 03. DIMENSIONAMENTO CAMERA UHV
+                // 03. MISSION-CRITICAL ENVIRONMENTS
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-light uppercase tracking-tight">
+                SETTORI D&apos;IMPIEGO & CASE STUDIES
+              </h2>
+            </div>
+            <div className="font-mono text-xs text-zinc-400">
+              SOLUZIONI CERTIFICATE PER IMPIANTI SEMICON E RICERCA FISICA
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 border-b border-white/12">
+            {/* Colonna Sinistra: Selettore Settori */}
+            <div className="lg:col-span-4 border-b lg:border-b-0 lg:border-r border-white/12 divide-y divide-white/10 font-mono text-xs">
+              {APPLICATION_CASE_STUDIES.map((app, index) => (
+                <button
+                  key={app.id}
+                  type="button"
+                  onClick={() => {
+                    sound.playClick(1300);
+                    setActiveAppIndex(index);
+                  }}
+                  className={`w-full p-6 text-left transition-colors flex items-center justify-between ${
+                    activeAppIndex === index
+                      ? "bg-white/[0.04] text-white border-l-2 border-[#ff3b1d]"
+                      : "text-zinc-400 hover:text-white hover:bg-white/[0.02]"
+                  }`}
+                >
+                  <div>
+                    <span className="text-[10px] text-zinc-500 uppercase block mb-1">
+                      03.{index + 1} // {app.id.toUpperCase()}
+                    </span>
+                    <span className="text-sm font-medium">{app.title}</span>
+                  </div>
+                  <span className="css-icon-chevron-right text-[#ff3b1d]" />
+                </button>
+              ))}
+            </div>
+
+            {/* Colonna Destra: Dettagli Tecnici Case Study */}
+            <div className="lg:col-span-8 p-6 sm:p-10 lg:p-12 bg-[#09090c] space-y-6">
+              {(() => {
+                const cur = APPLICATION_CASE_STUDIES[activeAppIndex];
+                return (
+                  <>
+                    <div className="border-b border-white/10 pb-4">
+                      <div className="font-mono text-xs text-[#ff3b1d] uppercase tracking-wider mb-1">
+                        {cur.sector}
+                      </div>
+                      <h3 className="text-2xl sm:text-3xl font-light uppercase tracking-tight text-white">
+                        {cur.title}
+                      </h3>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 font-mono text-xs">
+                      <div className="p-3 border border-white/10 bg-[#070708]">
+                        <span className="text-[10px] text-zinc-500 block">VUOTO OPERATIVO</span>
+                        <span className="text-emerald-400">{cur.targetVacuum}</span>
+                      </div>
+                      <div className="p-3 border border-white/10 bg-[#070708]">
+                        <span className="text-[10px] text-zinc-500 block">GAS DI PROCESSO</span>
+                        <span className="text-zinc-200">{cur.gasEnvironment}</span>
+                      </div>
+                      <div className="p-3 border border-white/10 bg-[#070708]">
+                        <span className="text-[10px] text-zinc-500 block">CONFIGURAZIONE</span>
+                        <span className="text-white">{cur.solution}</span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4 text-zinc-300 font-sans text-sm leading-relaxed">
+                      <div>
+                        <strong className="font-mono text-xs uppercase text-zinc-400 block mb-1">
+                          SFIDA INGEGNERISTICA:
+                        </strong>
+                        <p>{cur.challenge}</p>
+                      </div>
+                      <div>
+                        <strong className="font-mono text-xs uppercase text-[#ff3b1d] block mb-1">
+                          RISULTATO VALIDATO SUL CAMPO:
+                        </strong>
+                        <p>{cur.result}</p>
+                      </div>
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* =====================================================================
+          SEZIONE 04: SIMULATORE CONDUTTANZA & PUMP-DOWN CAMERA CON CANVAS 2D
+          ===================================================================== */}
+      <section id="simulatore" className="border-b border-white/12">
+        <div className="max-w-[1440px] mx-auto grid grid-cols-1 lg:grid-cols-12">
+          {/* Parametri di Configurazione */}
+          <div className="lg:col-span-5 p-6 sm:p-10 border-b lg:border-b-0 lg:border-r border-white/12 space-y-8">
+            <div>
+              <div className="font-mono text-xs text-[#ff3b1d] uppercase tracking-widest mb-2">
+                // 04. DIMENSIONAMENTO CAMERA UHV
               </div>
               <h2 className="text-2xl sm:text-3xl font-light uppercase tracking-tight mb-2">
                 CALCOLATORE DI CONDUTTANZA E TEMPO DI VUOTO
               </h2>
-              <p className="text-zinc-400 text-sm">
+              <p className="text-zinc-400 text-sm font-sans">
                 Configura i parametri geometrici e molecolari della camera da vuoto per stimare
                 la curva di svuotamento e l&apos;architettura di pompaggio Pfeiffer ottimale.
               </p>
@@ -686,13 +1000,16 @@ export default function PfeifferVacuumSite() {
                 max={600}
                 step={10}
                 value={chamberVolume}
-                onChange={(e) => setChamberVolume(Number(e.target.value))}
+                onChange={(e) => {
+                  sound.playClick(800);
+                  setChamberVolume(Number(e.target.value));
+                }}
                 className="w-full accent-[#ff3b1d] bg-zinc-800 h-1.5 cursor-pointer"
               />
               <div className="flex justify-between font-mono text-[10px] text-zinc-500">
                 <span>10 L (Lab SEM)</span>
                 <span>300 L (Coating Fab)</span>
-                <span>600 L (Aerospace Simulator)</span>
+                <span>600 L (Aerospace TVAC)</span>
               </div>
             </div>
 
@@ -706,7 +1023,10 @@ export default function PfeifferVacuumSite() {
                   <button
                     key={gas}
                     type="button"
-                    onClick={() => setSelectedGas(gas)}
+                    onClick={() => {
+                      sound.playClick(1500);
+                      setSelectedGas(gas);
+                    }}
                     className={`py-3 px-2 border font-mono text-xs uppercase transition-all ${
                       selectedGas === gas
                         ? "border-[#ff3b1d] bg-[#ff3b1d]/15 text-white"
@@ -738,7 +1058,10 @@ export default function PfeifferVacuumSite() {
                 max={-5}
                 step={1}
                 value={targetExponent}
-                onChange={(e) => setTargetExponent(Number(e.target.value))}
+                onChange={(e) => {
+                  sound.playClick(1000);
+                  setTargetExponent(Number(e.target.value));
+                }}
                 className="w-full accent-[#ff3b1d] bg-zinc-800 h-1.5 cursor-pointer"
               />
               <div className="flex justify-between font-mono text-[10px] text-zinc-500">
@@ -747,67 +1070,52 @@ export default function PfeifferVacuumSite() {
                 <span>10⁻⁵ hPa (Alto Vuoto)</span>
               </div>
             </div>
+
+            {/* Calcolo Matematico Conduttanza Formula */}
+            <div className="p-4 border border-white/10 bg-[#070708] font-mono text-xs space-y-2">
+              <div className="text-zinc-400 uppercase text-[10px]">
+                EQUAZIONE DI CONDUTTANZA KNUDSEN (FLUSSO MOLECOLARE):
+              </div>
+              <div className="text-[#ff3b1d] font-semibold">
+                C = (π / 12) · v̄ · (d³ / L) [L/s]
+              </div>
+              <div className="text-[11px] text-zinc-500">
+                Velocità media molecolare {selectedGas}:{" "}
+                <span className="text-white">
+                  {selectedGas === "H2" ? "1,760 m/s" : selectedGas === "He" ? "1,250 m/s" : "470 m/s"}
+                </span>
+              </div>
+            </div>
           </div>
 
-          {/* Risultati Ingegneristici & Curva Pure CSS */}
-          <div className="lg:col-span-6 p-6 sm:p-10 lg:p-12 bg-[#0b0b0e] flex flex-col justify-between space-y-8">
+          {/* Risultati con Evacuazione Animata in Canvas 2D */}
+          <div className="lg:col-span-7 p-6 sm:p-10 lg:p-12 bg-[#09090c] flex flex-col justify-between space-y-8">
             <div className="space-y-6">
-              <div className="flex items-center justify-between border-b border-white/10 pb-4">
-                <span className="font-mono text-xs text-zinc-400 uppercase">
-                  RISULTATO SIMULAZIONE DINAMICA
-                </span>
-                <span className="font-mono text-xs text-[#ff3b1d]">
-                  ISO 21360 CALIBRATED
-                </span>
-              </div>
+              {/* Simulatore 2D Particellare */}
+              <VacuumChamberSimulation
+                chamberVolume={chamberVolume}
+                gasType={selectedGas}
+                targetExponent={targetExponent}
+              />
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="p-5 border border-white/10 bg-[#070708]">
-                  <span className="font-mono text-[10px] text-zinc-500 uppercase block mb-1">
-                    TEMPO STIMATO DI PUMP-DOWN
+              {/* Statistiche Ingegneristiche */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 font-mono">
+                <div className="p-4 border border-white/10 bg-[#070708]">
+                  <span className="text-[10px] text-zinc-500 uppercase block mb-1">
+                    TEMPO STIMATO DI PUMP-DOWN (ISO 21360)
                   </span>
-                  <div className="text-3xl font-mono font-light text-white">
-                    {pumpDownMinutes} <span className="text-sm text-zinc-400">minuti</span>
+                  <div className="text-2xl font-light text-white">
+                    {pumpDownMinutes} <span className="text-xs text-zinc-400">minuti</span>
                   </div>
                 </div>
 
-                <div className="p-5 border border-white/10 bg-[#070708]">
-                  <span className="font-mono text-[10px] text-zinc-500 uppercase block mb-1">
+                <div className="p-4 border border-white/10 bg-[#070708]">
+                  <span className="text-[10px] text-zinc-500 uppercase block mb-1">
                     CAMMINO LIBERO MEDIO MOLECOLARE
                   </span>
-                  <div className="text-lg font-mono text-emerald-400 pt-1">
+                  <div className="text-sm font-medium text-emerald-400 pt-1">
                     {meanFreePathMeters}
                   </div>
-                </div>
-              </div>
-
-              {/* Curva Logaritmica di Decadimento Pressione in Puro CSS */}
-              <div className="p-5 border border-white/10 bg-[#070708] space-y-3">
-                <div className="flex justify-between font-mono text-[10px] text-zinc-500 uppercase">
-                  <span>DECADIMENTO PRESSIONE LOGARITMICA (P vs t)</span>
-                  <span>GAS: {selectedGas} ({gasFactors[selectedGas].label})</span>
-                </div>
-                <div className="h-32 flex items-end gap-1.5 pt-4">
-                  {[100, 82, 66, 53, 42, 33, 25, 19, 14, 10, 7, 5].map((val, i) => {
-                    const heightPct = Math.max(
-                      6,
-                      Math.min(
-                        100,
-                        val * (Math.abs(targetExponent) / 9) * (chamberVolume / 220 + 0.45)
-                      )
-                    );
-                    return (
-                      <div key={i} className="flex-1 flex flex-col items-center gap-1.5">
-                        <div
-                          className="w-full bg-gradient-to-t from-[#ff3b1d]/25 to-[#ff3b1d] transition-all duration-300"
-                          style={{ height: `${Math.min(100, heightPct)}px` }}
-                        />
-                        <span className="font-mono text-[8px] text-zinc-600">
-                          t{i + 1}
-                        </span>
-                      </div>
-                    );
-                  })}
                 </div>
               </div>
             </div>
@@ -836,8 +1144,8 @@ export default function PfeifferVacuumSite() {
           FOOTER INDUSTRIALE + LINK LEGALI & CONTROLLI COOKIE GDPR
           ===================================================================== */}
       <footer className="bg-[#050506] text-zinc-400 text-xs font-mono">
-        <div className="max-w-[1440px] mx-auto grid grid-cols-1 md:grid-cols-12 border-b border-white/10">
-          <div className="md:col-span-5 p-6 sm:p-10 border-b md:border-b-0 md:border-r border-white/10 space-y-4">
+        <div className="max-w-[1440px] mx-auto grid grid-cols-1 md:grid-cols-12 border-b border-white/12">
+          <div className="md:col-span-5 p-6 sm:p-10 border-b md:border-b-0 md:border-r border-white/12 space-y-4">
             <div className="flex items-center gap-3 text-white">
               <span className="css-icon-turbine text-[#ff3b1d]" />
               <span className="tracking-[0.2em] font-semibold">
@@ -854,34 +1162,46 @@ export default function PfeifferVacuumSite() {
             </div>
           </div>
 
-          <div className="md:col-span-3 p-6 sm:p-10 border-b md:border-b-0 md:border-r border-white/10 space-y-3">
+          <div className="md:col-span-3 p-6 sm:p-10 border-b md:border-b-0 md:border-r border-white/12 space-y-3">
             <div className="text-white uppercase tracking-wider mb-4">
               // DOCUMENTAZIONE LEGALE
             </div>
             <button
               type="button"
-              onClick={() => setLegalModal("privacy")}
+              onClick={() => {
+                sound.playClick(1000);
+                setLegalModal("privacy");
+              }}
               className="block hover:text-[#ff3b1d] transition-colors text-left"
             >
               [01] Privacy Policy (GDPR UE 2016/679)
             </button>
             <button
               type="button"
-              onClick={() => setLegalModal("terms")}
+              onClick={() => {
+                sound.playClick(1000);
+                setLegalModal("terms");
+              }}
               className="block hover:text-[#ff3b1d] transition-colors text-left"
             >
               [02] Termini e Condizioni Fornitura B2B
             </button>
             <button
               type="button"
-              onClick={() => setLegalModal("cookies")}
+              onClick={() => {
+                sound.playClick(1000);
+                setLegalModal("cookies");
+              }}
               className="block hover:text-[#ff3b1d] transition-colors text-left"
             >
               [03] Informativa Estesa sui Cookie
             </button>
             <button
               type="button"
-              onClick={() => setShowCookieSettings(true)}
+              onClick={() => {
+                sound.playToggle();
+                setShowCookieSettings(true);
+              }}
               className="mt-4 px-3 py-1.5 border border-white/15 text-zinc-200 hover:border-[#ff3b1d] transition-colors inline-flex items-center gap-2"
             >
               <span className="css-icon-crosshair text-[#ff3b1d]" />
@@ -929,6 +1249,120 @@ export default function PfeifferVacuumSite() {
           <div>ZERO-SVG PURE GEOMETRIC INTERFACE // NEXT.JS + THREE.JS</div>
         </div>
       </footer>
+
+      {/* =====================================================================
+          MODALE DI CONFRONTO SISTEMI (COMPARE DRAWER)
+          ===================================================================== */}
+      {showCompareModal && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#0b0b0e] border border-white/20 max-w-4xl w-full p-6 sm:p-8 relative max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-6">
+              <div>
+                <span className="font-mono text-[10px] text-[#ff3b1d] uppercase block">
+                  SYSTEM COMPARISON MATRIX // CONFRONTO HARDWARE
+                </span>
+                <h3 className="text-2xl font-normal text-white">CONFRONTO SISTEMI PFEIFFER</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowCompareModal(false)}
+                className="p-2 border border-white/15 hover:border-[#ff3b1d] transition-colors"
+                aria-label="Chiudi confronto"
+              >
+                <span className="css-icon-close" />
+              </button>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full font-mono text-xs border border-white/10 text-left">
+                <thead>
+                  <tr className="bg-[#070709] border-b border-white/10 text-zinc-400">
+                    <th className="p-3 border-r border-white/10 uppercase">PARAMETRO INGEGNERISTICO</th>
+                    {comparedProducts.map((p) => (
+                      <th key={p.id} className="p-3 border-r border-white/10 text-white font-medium">
+                        {p.name}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/10">
+                  <tr>
+                    <td className="p-3 border-r border-white/10 text-zinc-400 font-medium">CATEGORIA</td>
+                    {comparedProducts.map((p) => (
+                      <td key={p.id} className="p-3 border-r border-white/10 text-zinc-300">{p.category}</td>
+                    ))}
+                  </tr>
+                  <tr>
+                    <td className="p-3 border-r border-white/10 text-zinc-400 font-medium">PORTATA NOMINALE</td>
+                    {comparedProducts.map((p) => (
+                      <td key={p.id} className="p-3 border-r border-white/10 text-emerald-400">{p.pumpingSpeed}</td>
+                    ))}
+                  </tr>
+                  <tr>
+                    <td className="p-3 border-r border-white/10 text-zinc-400 font-medium">PRESSIONE LIMITE</td>
+                    {comparedProducts.map((p) => (
+                      <td key={p.id} className="p-3 border-r border-white/10 text-white">{p.ultimatePressure}</td>
+                    ))}
+                  </tr>
+                  <tr>
+                    <td className="p-3 border-r border-white/10 text-zinc-400 font-medium">ROTAZIONE ROTORE</td>
+                    {comparedProducts.map((p) => (
+                      <td key={p.id} className="p-3 border-r border-white/10 text-zinc-300">{p.rpm}</td>
+                    ))}
+                  </tr>
+                  <tr>
+                    <td className="p-3 border-r border-white/10 text-zinc-400 font-medium">RAPPORTO COMPRESSIONE N₂</td>
+                    {comparedProducts.map((p) => (
+                      <td key={p.id} className="p-3 border-r border-white/10 text-zinc-300">{p.compressionRatio}</td>
+                    ))}
+                  </tr>
+                  <tr>
+                    <td className="p-3 border-r border-white/10 text-zinc-400 font-medium">SISTEMA CUSCINETTI</td>
+                    {comparedProducts.map((p) => (
+                      <td key={p.id} className="p-3 border-r border-white/10 text-zinc-300">{p.bearing}</td>
+                    ))}
+                  </tr>
+                  <tr>
+                    <td className="p-3 border-r border-white/10 text-zinc-400 font-medium">FLANGIA VUOTO</td>
+                    {comparedProducts.map((p) => (
+                      <td key={p.id} className="p-3 border-r border-white/10 text-zinc-300">{p.flange}</td>
+                    ))}
+                  </tr>
+                  <tr>
+                    <td className="p-3 border-r border-white/10 text-zinc-400 font-medium">POTENZA ASSORBITA</td>
+                    {comparedProducts.map((p) => (
+                      <td key={p.id} className="p-3 border-r border-white/10 text-zinc-300">{p.powerConsumption}</td>
+                    ))}
+                  </tr>
+                  <tr>
+                    <td className="p-3 border-r border-white/10 text-zinc-400 font-medium">PESO UNITÀ</td>
+                    {comparedProducts.map((p) => (
+                      <td key={p.id} className="p-3 border-r border-white/10 text-zinc-300">{p.weight}</td>
+                    ))}
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div className="flex justify-end gap-3 mt-6">
+              <button
+                type="button"
+                onClick={() => setCompareList([])}
+                className="px-4 py-2 border border-white/20 text-zinc-400 hover:text-white uppercase font-mono text-xs transition-colors"
+              >
+                Svuota Confronto
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowCompareModal(false)}
+                className="px-4 py-2 bg-[#ff3b1d] text-black font-semibold uppercase font-mono text-xs hover:bg-white transition-colors"
+              >
+                Chiudi
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* =====================================================================
           MODALE SCHEDA TECNICA PRODOTTO & PREVENTIVAZIONE B2B
@@ -1006,6 +1440,7 @@ export default function PfeifferVacuumSite() {
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
+                  sound.playToggle();
                   setQuoteSubmitted(true);
                 }}
                 className="space-y-4 border-t border-white/10 pt-6"
@@ -1052,7 +1487,10 @@ export default function PfeifferVacuumSite() {
                   <button
                     key={tab}
                     type="button"
-                    onClick={() => setLegalModal(tab)}
+                    onClick={() => {
+                      sound.playClick(1000);
+                      setLegalModal(tab);
+                    }}
                     className={`px-3 py-1.5 uppercase border ${
                       legalModal === tab
                         ? "border-[#ff3b1d] bg-[#ff3b1d] text-black font-semibold"
@@ -1309,7 +1747,7 @@ export default function PfeifferVacuumSite() {
                 <span className="css-icon-crosshair" />
                 <span>PROTOCOLLO DI CONFORMITÀ PRIVACY & COOKIE (UE 2016/679)</span>
               </div>
-              <p className="text-xs text-zinc-300 leading-relaxed">
+              <p className="text-xs text-zinc-300 leading-relaxed font-sans">
                 Utilizziamo cookie tecnici necessari per l&apos;esecuzione del motore 3D WebGL e,
                 previo tuo consenso, cookie analitici e di marketing B2B. Puoi accettare tutti i moduli,
                 rifiutare quelli opzionali o configurare granularmente ogni parametro. Consulta la{" "}
