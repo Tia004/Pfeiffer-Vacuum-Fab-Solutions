@@ -5,21 +5,23 @@
 [![Three.js](https://img.shields.io/badge/Three.js-WebGL-black?style=flat&logo=three.js)](https://threejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue?style=flat&logo=typescript)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-38bdf8?style=flat&logo=tailwind-css)](https://tailwindcss.com/)
-[![Deployment](https://img.shields.io/badge/Deployed_on-Vercel-black?style=flat&logo=vercel)](https://vercel.com/)
+[![Deployment](https://img.shields.io/badge/Deployed_on-Vercel-black?style=flat&logo=vercel)](https://pfeiffer-vacuum-fab-solutions.vercel.app)
 
 A minimalist, high-precision industrial digital experience redesign for **Pfeiffer Vacuum Technology AG**, world leader in ultra-high vacuum (UHV) turbomolecular pumps, active magnetic levitation, and molecular leak detection systems for semiconductor EUV lithography, CERN, and aerospace simulation.
 
-Designed in an ultra-minimalist aesthetic inspired by **Teenage Engineering, Braun, and Linear**, marrying brutalist architectural grids with high-performance 3D WebGL computation.
+Designed in an ultra-minimalist aesthetic inspired by **Teenage Engineering, Braun, and Linear**, marrying brutalist architectural grids with high-performance 3D WebGL computation and zero-asset procedural geometry.
 
 ---
 
 ## Key Highlights
 
 - **Zero SVG & Zero Emoji Architecture**: 100% of the iconography, crosshairs, telemetry gauges, turbine glyphs, and flow indicators are built exclusively through pure geometric CSS (`::before`, `::after`, `clip-path`, `conic-gradient`, and matrix transforms).
-- **Procedural 3D WebGL Turbopump Engine**: Interactive HiPace turbomolecular rotor assembly built with Three.js & React Three Fiber. Features 7 progressive axial compression stages (36 precision blades per stage), ceramic Si3N4 bearing collars, Holweck molecular drag stage, and an interactive **axial exploded view**.
-- **Real-Time Telemetry HUD**: 60 FPS simulated chamber pressure telemetry ($10^{-12}\text{ hPa}$), rotor frequency modulation (Standby, Nominal, Overdrive up to 90,000 RPM), and bearing temperature readouts.
-- **Interactive UHV Chamber Pump-Down Simulator**: Dynamic conductance and evacuation time calculator based on chamber volume (10 L – 600 L), residual process gas species ($N_2, Ar, He, H_2$), and target vacuum level down to $10^{-11}\text{ hPa}$ (ISO 21360 compliant). Includes pure CSS logarithmic pressure decay curve rendering.
-- **Industrial Product Matrix & B2B CAD Quotations**: Technical specifications for flagship Pfeiffer systems (*HiPace 80 Neo*, *HiPace 2300 M*, *HiScroll 12*, *ASM 340*), with interactive technical datasheets and instant B2B CAD model (.STEP) request modal.
+- **Interactive 3D WebGL Turbopump Engine**: HiPace turbomolecular rotor assembly built with Three.js & React Three Fiber. Features full **360° OrbitControls**, 7 progressive axial compression stages (36 precision blades per stage), ceramic Si3N4 bearing collars, Holweck molecular drag stage, and an interactive **axial exploded view**.
+- **CAD Shading Modes & Kinematic Stage Inspector**: Toggle between Titanium Solid, Wireframe CAD Mesh, and Infrared Thermal Stress mapping. Click any stage to inspect blade pitch angles, tangential blade velocity ($v = 492\text{ m/s}$), and gas conductance.
+- **Dynamic 2D Molecular Evacuation Simulation**: Canvas-based real-time particle engine simulating Brownian gas motion ($N_2, Ar, He, H_2$). Click **"AVVIA PUMP-DOWN"** to watch molecules being pulled down through the turbomolecular intake and evacuated as chamber pressure drops in real time.
+- **Synthesized Audio Haptics**: Integrated mechanical tactile sound feedback generated directly via the Web Audio API (zero external sound files) mimicking precision Leica/Braun dials.
+- **Side-by-Side System Comparison Drawer**: Direct comparison matrix for Pfeiffer flagship pumps (*HiPace 80 Neo*, *HiPace 2300 M*, *HiScroll 12*, *ASM 340*), evaluating volume flow, ultimate vacuum, power draw, and flange standards.
+- **Mission-Critical Industrial Case Studies**: Interactive briefs on EUV lithography (ASML 2nm node), high-energy synchrotrons (CERN LHC), and deep space thermal vacuum simulation (ESA/NASA TVAC).
 - **Full GDPR & EU 2016/679 Compliance**: Persistent granular cookie consent banner, customizable privacy category controls (Technical, Telemetry, B2B Marketing), and modal documents for Privacy Policy, Terms of Supply (Dual-Use EU 2021/821), and Extended Cookie Policy.
 
 ---
@@ -32,6 +34,7 @@ Designed in an ultra-minimalist aesthetic inspired by **Teenage Engineering, Bra
 | **Language** | TypeScript 5 |
 | **3D Engine** | Three.js & `@react-three/fiber`, `@react-three/drei` |
 | **Styling** | Tailwind CSS v4 & Pure Geometric CSS System |
+| **Audio** | Pure Web Audio API Synthesizer |
 | **Fonts** | Geist & Geist Mono (Vercel) |
 | **Hosting** | Vercel Serverless Edge Platform |
 
@@ -69,6 +72,12 @@ npm run build
 # Run production server
 npm run start
 ```
+
+---
+
+## Production URL
+
+Live deployment: **[https://pfeiffer-vacuum-fab-solutions.vercel.app](https://pfeiffer-vacuum-fab-solutions.vercel.app)**
 
 ---
 
